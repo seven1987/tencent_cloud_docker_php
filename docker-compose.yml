@@ -1,0 +1,54 @@
+version: '3'
+services:   
+    # rabbitmq:
+    #     image: rabbitmq:3.6-management
+    #     restart: always
+    #     ports: 
+    #         - "5671:5671"
+    #         - "15671:15671"
+    # redis:
+    #     image: redis:3.2
+    #     restart: always
+    #     ports:
+    #         - "6379:6379"
+    #     volumes:
+    #         - ./data:/data
+    mongo:
+        image: mongo:3.5.13
+        restart: always
+        ports:
+            - "27017:27017"
+        volumes:
+            - /home/db:/data/db
+    mysql: 
+        image: mysql:5.7
+        restart: always
+        environment: 
+                MYSQL_ROOT_PASSWORD: root
+        ports: 
+            - "3306:3306"
+    php: 
+        depends_on: 
+            - mysql
+            # - redis
+            - mongo
+        image: php:7.0.23-fpm-final
+        restart: always
+        volumes: 
+            - ./www:/usr/share/nginx/html
+            - ./conf/php/conf.d:/usr/local/etc/php/conf.d:ro
+            #- ./conf/php/php.ini:/usr/local/etc/php/php.ini:ro
+        ports: 
+            - "9000:9000"
+    nginx: 
+        depends_on: 
+            - php
+        image: nginx:1.13.5
+        volumes: 
+            -  ./www:/usr/share/nginx/html
+            -  ./conf/nginx.conf:/etc/nginx/nginx.conf
+        restart: always
+
+        ports: 
+            - "80:80"
+            - "443:443"
